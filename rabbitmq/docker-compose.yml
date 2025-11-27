@@ -1,0 +1,22 @@
+# docker-compose.yml
+version: '3.5'   # opcional: puedes eliminar esta línea si prefieres no ver la advertencia
+
+services:
+  rabbit:
+    container_name: symfony-api-platform-rabbitmq
+    build:
+      context: ./docker
+      args:
+        # usa la variable de entorno U_ID si está definida, si no usa 1000
+        UID: ${U_ID:-1000}
+    volumes:
+      - ./docker/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - symfony-api-platform-network
+
+networks:
+  symfony-api-platform-network:
+    external: true

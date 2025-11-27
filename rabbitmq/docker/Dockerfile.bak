@@ -1,0 +1,23 @@
+# docker/Dockerfile
+ARG UID=1000
+FROM rabbitmq:3-management
+
+# Comprueba si ya existe un usuario con ese UID; si no existe, créalo.
+RUN awk -F: -v uid="${UID}" '($3==uid){exit 0} END{exit 1}' /etc/passwd || \
+    adduser -u "${UID}" --disabled-password --gecos "" appuser
+
+# Crear home, .ssh y ajustar permisos
+RUN mkdir -p /home/appuser/.ssh \
+ && chown -R appuser:appuser /home/appuser/
+
+# Configs y bashrc — hechos por root antes de cambiar a appuser
+RUN echo "StrictHostKeyChecking no" >> /home/appuser/.ssh/config \
+ && echo "export COLUMNS=300" >> /home/appuser/.bashrc
+
+# Instalar utilidades necesarias y limpiar cache de apt
+RUN apt-get update \
+    && apt-get install -y vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Ejecutar el contenedor con appuser
+USER appuser
